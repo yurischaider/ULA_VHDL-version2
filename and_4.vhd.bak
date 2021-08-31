@@ -1,0 +1,32 @@
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+
+-- OPERAÇÃO AND ENTRE DOIS NÚMEROS BINÁRIOS DE 4 BITS
+
+ENTITY and_4 is PORT
+(
+    x,y     : in  bit_vector(3 downto 0);
+    output  : out bit_vector(3 downto 0);
+    
+);
+END and_4;
+
+ARCHITECTURE and4 of and_4 is
+
+    COMPONENT and_4 is port
+	 (
+        xi,yi   : in bit;
+        result  : out bit
+    );
+    END COMPONENT;
+    
+    signal c : bit_vector(3 downto 1);
+    
+BEGIN
+
+    x0: fulladder_1  PORT MAP(x(0), y(0), cin,  o(0), c(1));
+    x1: fulladder_1  PORT MAP(x(1), y(1), c(1), o(1), c(2));
+    x2: fulladder_1  PORT MAP(x(2), y(2), c(2), o(2), c(3));
+    x3: fulladder_1  PORT MAP(x(3), y(3), c(3), o(3), cout);
+    
+END fulladder_4;

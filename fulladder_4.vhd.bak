@@ -1,0 +1,35 @@
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+
+
+--SOMADOR COMPLETO DE 4 BITS CHAMANDO O COMPONENTE (MÓDULO) DO SOMADOR DE 1 BIT
+
+ENTITY fulladder_4 is PORT
+(
+    x,y     : in  bit_vector(3 downto 0);
+    cin     : in  bit;
+    output  : out bit_vector(3 downto 0);
+    cout    : out bit
+    
+);
+END fuladder_4;
+
+ARCHITECTURE adder_4 of  fulladder_4 is
+
+    COMPONENT fulladder_1 is port
+	 (
+        a,b,ci    :    in bit;
+        s,co        :    out bit
+    );
+    END COMPONENT;
+    
+    signal c        : bit_vector(3 downto 1);
+    
+begin
+
+    x0:    fulladder    PORT MAP(    x(0),        y(0),        cin,        o(0),        c(1));
+    x1:    fulladder    PORT MAP(    x(1),        y(1),        c(1),        o(1),        c(2));
+    x2:    fulladder    PORT MAP(    x(2),        y(2),        c(2),        o(2),        c(3));
+    x3:    fulladder    PORT MAP(    x(3),        y(3),        c(3),        o(3),        cout);
+    
+end hardware;

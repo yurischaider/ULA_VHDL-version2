@@ -1,0 +1,91 @@
+--Definicao das bibliotecas usadas no projeto
+
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+
+--Entidade da ULA com entradas e saidas definidas
+
+ENTITY ula IS PORT
+(
+    x_ula, y_ula	: in  STD_LOGIC_VECTOR(3 downto 0);			--entrada x e y de 4 bits cada
+	 selector 	   : in  STD_LOGIC_VECTOR(2 downto 0);			--seletor de operacao
+    output_ula	   : out STD_LOGIC_VECTOR(3 downto 0);			--saida resultante da operacao
+    
+	 zero 	 : out STD_LOGIC;										--flag de zero     
+    negative : out STD_LOGIC;										--flag negativo    
+	 carryout : out STD_LOGIC;										--flag carry out   
+	 oflow	 : out STD_LOGIC 										--flag overflow    
+	 
+);
+END ula;
+
+ARCHITECTURE main of ula is 
+
+	signal sum, subC2, incr1, csignal, decr1, op_and, op_or, desloc :STD_LOGIC_VECTOR(3 downto 0); --Atribui um sinal a cada operacao
+	signal output_s 	: STD_LOGIC_VECTOR(3 downto 0);
+	signal carry_flag : STD_LOGIC;
+	signal x_ulabarrado, y_ulabarrado : STD_LOGIC_VECTOR (3 downto 0);
+	
+	COMPONENT fulladder_4 is port(
+        x,y     : in  STD_LOGIC_VECTOR(3 downto 0);
+		  cin     : in  STD_LOGIC;
+		  output  : out STD_LOGIC_VECTOR(3 downto 0);
+		  cout    : out STD_LOGIC
+        );
+   END COMPONENT;
+	
+	COMPONENT and_4 is port(
+        x,y     : in  STD_LOGIC_VECTOR(3 downto 0);
+		  output  : out STD_LOGIC_VECTOR(3 downto 0)
+        );
+   END COMPONENT;
+	
+	COMPONENT or_4 is port(
+        x,y     : in  STD_LOGIC_VECTOR(3 downto 0);
+		  output  : out STD_LOGIC_VECTOR(3 downto 0)
+        );
+   END COMPONENT;
+	
+
+BEGIN
+
+	x_ulabarrado <= not x_ula;
+	y_ulabarrado <= not y_ula;
+
+--Faz o mapeamento de cada uma das operacoes de acordo com cada componente
+
+	soma 		: fulladder_4 PORT MAP(x_ula , y_ula , '0' , sum ,  carry_flag );     
+	subtracao	: fulladder_4 PORT MAP(x_ula , y_ulabarrado , '1' , subC2 ,  carry_flag );
+	incremento  : fulladder_4 PORT MAP(x_ula , "0000" , '1' , incr1 ,  carry_flag );
+	troca_sinal : fulladder_4 PORT MAP(x_ulabarrado , "0000" , '1' , csignal , carry_flag );
+	decremento  : fulladder_4 PORT MAP(x_ula , "1111" , '0' , decr1 , carry_flag ); 
+	andBitwise	: and_4 PORT MAP(x_ula , y_ula , op_and);
+	orBitwise	: or_4  PORT MAP(x_ula , y_ula , op_or);
+	desloc_dir	: fulladder_4 PORT MAP(x_ula , x_ula , '0' , desloc , carry_flag );  
+
+	
+--Atribui o sinal de saida a cada uma das operacoes de acordo com o seletor
+	output_s <= sum 	  when (selector = "000") else
+					subC2   when (selector = "001") else
+					incr1   when (selector = "010") else
+					csignal when (selector = "011") else
+					decr1   when (selector = "100") else
+					op_and  when (selector = "101") else
+					op_or   when (selector = "110") else
+					desloc  when (selector = "111");
+				 
+--Logica das flags
+
+	zero  	<= '1' when output_s = "0000";
+	
+	negative <= '1' when output_s(3) = '1';
+	
+	carryout <= '1' when carry_flag = '1';
+	
+	oflow 	<= '1' when carry_flag = '1';
+	
+--SaÃ­das
+	
+	output_ula <= output_s;
+	
+END main;
